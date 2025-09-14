@@ -1,10 +1,8 @@
 import axios from 'axios';
 import { getToken } from './auth';
 
-// Use empty string for relative URLs when deployed with nginx proxy
-// or fallback to direct backend URL for development
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
+// Direct backend API URL - no nginx proxy needed
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 // Set up axios interceptor to include auth token
 axios.interceptors.request.use((config) => {
