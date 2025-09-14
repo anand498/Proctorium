@@ -109,7 +109,7 @@ const UserAuth: React.FC = () => {
             onClick={() => navigate('/admin/auth')}
             className="text-green-600 hover:text-green-800 text-sm font-medium"
           >
-            Go to Admin Portal →
+            Go to Sourcing Admin Portal →
           </button>
         </div>
       </div>

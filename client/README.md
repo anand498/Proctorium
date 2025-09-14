@@ -5,7 +5,7 @@ A modern React TypeScript frontend for the Proctorium exam proctoring system, bu
 ## Features
 
 ### 🔐 Authentication System
-- **Admin Portal**: Secure login for administrators to monitor exams
+- **Sourcing Admin Portal**: Secure login for administrators to monitor exams
 - **Candidate Portal**: User-friendly login for students taking exams
 - **JWT Token Management**: Automatic token handling and validation
 - **Role-based Access Control**: Different interfaces for admins and users
