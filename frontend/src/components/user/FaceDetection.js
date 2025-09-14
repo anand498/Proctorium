@@ -15,7 +15,7 @@ const FaceDetection = ({ examId, onFlagsDetected, onComplete }) => {
     const [isModelLoading, setIsModelLoading] = useState(true);
 
     // Screenshot throttling - minimum 5 seconds between screenshots of same type
-    const SCREENSHOT_THROTTLE_MS = 5000;
+    const SCREENSHOT_THROTTLE_MS = 1000;
 
     useEffect(() => {
         const loadModel = async () => {

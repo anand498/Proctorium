@@ -52,26 +52,57 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
 
   const startCamera = useCallback(async () => {
     try {
+      // Stop existing stream first
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: 640,
-          height: 480,
-          facingMode: 'user'
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user',
+          frameRate: { ideal: 30 }
         },
         audio: false
       });
-      
+
       setStream(mediaStream);
-      
+
       if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
+        const video = videoRef.current;
+        video.srcObject = mediaStream;
+
+        // Add event listeners for better stream management
+        video.onloadedmetadata = () => {
+          console.log('Video metadata loaded');
+        };
+
+        video.oncanplay = () => {
+          console.log('Video can start playing');
+        };
+
+        video.onerror = (error) => {
+          console.error('Video error:', error);
+        };
+
+        // Ensure video plays and handles loading
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log('Video started playing successfully');
+            })
+            .catch(error => {
+              console.error('Error playing video:', error);
+            });
+        }
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
       onFlagDetected('camera_error', 'Unable to access camera');
     }
-  }, [onFlagDetected]);
+  }, [onFlagDetected, stream]);
 
   const stopCamera = useCallback(() => {
     if (stream) {
@@ -179,19 +210,21 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
     loadModel();
   }, [loadModel]);
 
+  // Initialize camera when component becomes active
   useEffect(() => {
-    if (isActive && !isModelLoading && model) {
+    if (isActive && model && !stream) {
       startCamera();
-    } else if (!isActive) {
-      stopCamera();
     }
+  }, [isActive, model, stream, startCamera]);
 
+  // Cleanup when component unmounts or becomes inactive
+  useEffect(() => {
     return () => {
-      if (!isActive) {
-        stopCamera();
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isActive, isModelLoading, model, startCamera, stopCamera]);
+  }, [stream]);
 
   // Face detection loop
   useEffect(() => {
@@ -226,6 +259,9 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
           autoPlay
           muted
           playsInline
+          controls={false}
+          preload="auto"
+          style={{ backgroundColor: '#000' }}
         />
         <canvas
           ref={canvasRef}
