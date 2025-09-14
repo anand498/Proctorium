@@ -85,6 +85,15 @@ export const proctoringAPI = {
     });
     return response.data;
   },
+  submitFlag: async (examId: string, flagType: string, description: string, timestamp: string) => {
+    const response = await api.post('/api/proctoring/flag', {
+      exam_id: examId,
+      flag_type: flagType,
+      description: description,
+      timestamp: timestamp
+    });
+    return response.data;
+  },
 };
 
 export default api;
