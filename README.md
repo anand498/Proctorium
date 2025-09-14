@@ -29,7 +29,7 @@ An AI-powered online exam proctoring system with real-time face detection and au
 - URL: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
 
-### React Frontend
+### React Client (Vite + TypeScript)
 - URL: http://localhost:3000
 
 ## Quick Start
@@ -40,7 +40,7 @@ An AI-powered online exam proctoring system with real-time face detection and au
    ```
 
 2. **Access the application**:
-   - Frontend: http://localhost:3000
+   - Client: http://localhost:3000
    - Backend API: http://localhost:8000/docs
    - MinIO Console: http://localhost:9001
 
@@ -72,7 +72,7 @@ The application uses **minimal logging** to reduce noise:
 
 ## Technology Stack
 
-- **Frontend**: React 18, TensorFlow.js, BlazeFace
+- **Client**: React 18 with Vite, TypeScript, TensorFlow.js, BlazeFace, Tailwind CSS
 - **Backend**: FastAPI, PyMongo, Pydantic v2
 - **Database**: MongoDB 6.0
 - **Storage**: MinIO
@@ -84,7 +84,7 @@ To modify and rebuild:
 
 ```bash
 # Rebuild specific service
-docker compose build frontend
+docker compose build client
 docker compose build backend
 
 # Restart services
@@ -92,12 +92,12 @@ docker compose up -d
 
 # View logs
 docker logs exam_proctoring_backend
-docker logs exam_proctoring_frontend
+docker logs exam_proctoring_frontend_client
 ```
 
 ## Technology Stack
 
-- **Frontend**: React 18 with TensorFlow.js for face detection
+- **Client**: React 18 with Vite, TypeScript and TensorFlow.js for face detection
 - **Backend**: FastAPI with PyMongo for MongoDB operations
 - **Database**: MongoDB for document storage
 - **Object Storage**: MinIO for screenshot and image storage

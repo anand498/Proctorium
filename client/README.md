@@ -6,18 +6,18 @@ A modern React TypeScript frontend for the Proctorium exam proctoring system, bu
 
 ### 🔐 Authentication System
 - **Sourcing Admin Portal**: Secure login for administrators to monitor exams
-- **Candidate Portal**: User-friendly login for students taking exams
+- **Candidate Portal**: User-friendly login for Candidates taking exams
 - **JWT Token Management**: Automatic token handling and validation
 - **Role-based Access Control**: Different interfaces for admins and users
 
-### 👨‍💼 Admin Dashboard
+### 👨‍💼 Sourcing Admin Dashboard
 - **Exam Management**: View all exam sessions and their details
 - **Proctoring Monitoring**: Real-time access to proctoring flags and alerts
 - **Flag Analysis**: Detailed view of suspicious activities during exams
 - **Screenshot Review**: Access to captured screenshots during flagged events
 - **Exam Deletion**: Remove completed or invalid exam sessions
 
-### 👨‍🎓 Student Interface
+### 👨‍🎓 Candidate Interface
 - **Exam Dashboard**: Clean interface showing available exams
 - **Exam Instructions**: Clear guidelines before starting exams
 - **Real-time Proctoring**: Live camera monitoring during exams
@@ -54,9 +54,9 @@ client/
 ├── src/
 │   ├── components/           # React components
 │   │   ├── AdminAuth.tsx     # Admin login component
-│   │   ├── UserAuth.tsx      # Student login component
+│   │   ├── UserAuth.tsx      # Candidate login component
 │   │   ├── AdminDashboard.tsx # Admin monitoring interface
-│   │   ├── UserDashboard.tsx  # Student exam selection
+│   │   ├── UserDashboard.tsx  # Candidate exam selection
 │   │   ├── ExamPage.tsx      # Main exam interface
 │   │   ├── FaceDetection.tsx # AI proctoring component
 │   │   └── TestingDashboard.tsx # System testing interface
@@ -137,9 +137,9 @@ The client integrates with the Proctorium backend API:
 - Uploads evidence to the backend for admin review
 
 ### Proctoring Flags
-- **No Face Detected**: When student looks away or leaves camera view
+- **No Face Detected**: When Candidate looks away or leaves camera view
 - **Multiple Faces**: When additional people appear in camera
-- **Tab Switch**: When student navigates away from exam window
+- **Tab Switch**: When Candidate navigates away from exam window
 - **Camera Error**: When camera access fails or is blocked
 
 ### Responsive Design
