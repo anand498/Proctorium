@@ -6,7 +6,6 @@ from app.services.storage_service import StorageService
 from bson import ObjectId
 from datetime import datetime
 
-
 class ExamService:
     def __init__(self):
         self.db = get_database()
@@ -61,16 +60,12 @@ class ExamService:
                 )
             )
         return exams
-
+    
     def delete_exam(self, exam_id: str) -> bool:
         """Delete exam and associated data"""
         # First delete from storage service (handles MinIO cleanup)
         storage_success = self.storage_service.delete_exam_data(exam_id)
-
-        # Then delete from MongoDB
-        result = self.exams_collection.delete_one({"exam_id": exam_id})
-
-        return result.deleted_count > 0
+        return storage_success
 
     def submit_exam_data(
         self, exam_id: str, flags: List[dict], screenshots: List[str]

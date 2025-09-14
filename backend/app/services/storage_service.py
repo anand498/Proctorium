@@ -161,34 +161,18 @@ class StorageService:
     def delete_exam_data(self, exam_id: str) -> bool:
         """Delete exam data and associated screenshots"""
         try:
-            # First fetch the exam data to get screenshot names
-            exam_data = self.fetch_exam_data(exam_id)
-            if not exam_data:
-                return False
-
-            # Delete screenshots from MinIO
-            for screenshot in exam_data.get("screenshots", []):
-                if isinstance(screenshot, dict) and "url" in screenshot:
-                    # Extract filename from URL
-                    filename = screenshot["url"].split("/")[-1]
-                    try:
-                        self.minio_client.remove_object(self.bucket_name, filename)
-                    except S3Error as e:
-                        self.logger.warning(
-                            f"Could not delete screenshot {filename}: {e}"
-                        )
-
             # Delete exam data from MongoDB
             result = self.db.exams.delete_one({"exam_id": exam_id})
             success = result.deleted_count > 0
             if success:
-                self.logger.info(
-                    f"Exam data deleted successfully for exam_id: {exam_id}"
-                )
+                print(f"Exam data deleted successfully for exam_id: {exam_id}")
+            else:
+                print(f"No exam data was deleted for exam_id: {exam_id}")
             return success
         except Exception as e:
-            self.logger.error(f"Error deleting exam data for {exam_id}: {e}")
+            print(f"Error deleting exam data for {exam_id}: {e}")
             return False
+
 
     def close_connections(self):
         """Close database connections"""
