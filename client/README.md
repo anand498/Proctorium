@@ -6,7 +6,7 @@ A modern React TypeScript frontend for the Proctorium exam proctoring system, bu
 
 ### 🔐 Authentication System
 - **Admin Portal**: Secure login for administrators to monitor exams
-- **Student Portal**: User-friendly login for students taking exams
+- **Candidate Portal**: User-friendly login for students taking exams
 - **JWT Token Management**: Automatic token handling and validation
 - **Role-based Access Control**: Different interfaces for admins and users
 
@@ -99,7 +99,7 @@ client/
 
 3. **Access the application**:
    - Open http://localhost:3000 in your browser
-   - Default redirects to student portal
+   - Default redirects to Candidate Portal
 
 ### Default Credentials
 

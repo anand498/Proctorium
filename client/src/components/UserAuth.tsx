@@ -42,7 +42,7 @@ const UserAuth: React.FC = () => {
           <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
             <User className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Student Portal</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Candidate Portal</h2>
           <p className="text-gray-600 mt-2">Access your exam dashboard</p>
         </div>
 
