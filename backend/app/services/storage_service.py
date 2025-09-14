@@ -93,7 +93,7 @@ class StorageService:
             external_endpoint = os.getenv(
                 "MINIO_EXTERNAL_ENDPOINT", os.getenv("MINIO_ENDPOINT")
             )
-            url = f"http://{external_endpoint}/{self.bucket_name}/{image_name}"
+            url = f"{external_endpoint}/{self.bucket_name}/{image_name}"
             self.logger.info(f"Image uploaded successfully: {image_name}")
             return url
         except S3Error as e:

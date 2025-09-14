@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { LoginCredentials, AuthResponse, ExamData, Flag } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = 'https://34.30.233.1/api' || 'http://localhost:8000';
 
 // Create axios instance
 const api = axios.create({
@@ -82,16 +82,6 @@ export const proctoringAPI = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    });
-    return response.data;
-  },
-
-  submitFlag: async (examId: string, flagType: string, description: string, timestamp: string) => {
-    const response = await api.post('/api/proctoring/flag', {
-      exam_id: examId,
-      flag_type: flagType,
-      description: description,
-      timestamp: timestamp
     });
     return response.data;
   },
