@@ -180,7 +180,7 @@ class ExamService:
                     "screenshots": existing_screenshots
                 }}
             )
-            print(f"� Added flag to existing exam {exam_id}")
+            print(f"📷 Added flag to existing exam {exam_id}")
         else:
             # Create new exam record with this flag
             new_exam = {
@@ -195,3 +195,41 @@ class ExamService:
             print(f"📝 Created new exam record for {exam_id}")
         
         return screenshot_url
+
+    def save_flag_without_screenshot(self, exam_id: str, flag_name: str, description: str, timestamp: str) -> str:
+        """Save flag without screenshot to database"""
+        # Create flag record in database without screenshot
+        flag_data = {
+            "flag_name": flag_name,
+            "screenshot_url": "",  # Empty for non-screenshot flags
+            "description": description,
+            "timestamp": datetime.fromisoformat(timestamp.replace('Z', '+00:00')) if timestamp else datetime.utcnow()
+        }
+        
+        # Update existing exam or create new one
+        exam_data = self.exams_collection.find_one({"exam_id": exam_id})
+        
+        if exam_data:
+            # Add flag to existing exam
+            existing_flags = exam_data.get("flags", [])
+            existing_flags.append(flag_data)
+            
+            self.exams_collection.update_one(
+                {"exam_id": exam_id}, 
+                {"$set": {"flags": existing_flags}}
+            )
+            print(f"🚩 Added flag to existing exam {exam_id}")
+        else:
+            # Create new exam record with this flag
+            new_exam = {
+                "exam_id": exam_id,
+                "flags": [flag_data],
+                "screenshots": [],
+                "status": "in_progress",
+                "created_at": datetime.utcnow()
+            }
+            
+            self.exams_collection.insert_one(new_exam)
+            print(f"📝 Created new exam record for {exam_id}")
+        
+        return flag_name
