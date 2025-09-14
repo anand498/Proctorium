@@ -7,9 +7,10 @@ interface FaceDetectionProps {
   examId: string;
   onFlagDetected: (flagType: string, description: string) => void;
   isActive: boolean;
+  isReady?: boolean; // New prop for verification phase
 }
 
-const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, isActive }) => {
+const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, isActive, isReady = false }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<blazeface.BlazeFaceModel | null>(null);
@@ -210,12 +211,12 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
     loadModel();
   }, [loadModel]);
 
-  // Initialize camera when component becomes active
+  // Initialize camera when component becomes ready or active
   useEffect(() => {
-    if (isActive && model && !stream) {
+    if ((isReady || isActive) && model && !stream) {
       startCamera();
     }
-  }, [isActive, model, stream, startCamera]);
+  }, [isReady, isActive, model, stream, startCamera]);
 
   // Cleanup when component unmounts or becomes inactive
   useEffect(() => {
@@ -271,9 +272,25 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
         
         {/* Status indicators */}
         <div className="absolute top-2 left-2 flex gap-2">
-          <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-red-500' : 'bg-gray-500'}`} />
+          <div className={`w-3 h-3 rounded-full ${
+            isActive ? 'bg-red-500' : 
+            isReady ? 'bg-blue-500' : 
+            'bg-gray-500'
+          }`} />
           <div className={`w-3 h-3 rounded-full ${faceDetected ? 'bg-green-500' : 'bg-yellow-500'}`} />
         </div>
+        
+        {/* Ready/Active status overlay */}
+        {isReady && !isActive && (
+          <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+            Ready
+          </div>
+        )}
+        {isActive && (
+          <div className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded animate-pulse">
+            Recording
+          </div>
+        )}
         
         {/* Loading indicator */}
         {isModelLoading && (

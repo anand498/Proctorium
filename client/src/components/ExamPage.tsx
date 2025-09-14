@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import FaceDetection from './FaceDetection';
+import SystemVerification from './SystemVerification';
 import { proctoringAPI } from '../services/api';
 import { useTabSwitchDetection } from '../hooks/useTabSwitchDetection';
 import { useCopyPasteDetection } from '../hooks/useCopyPasteDetection';
@@ -25,6 +26,7 @@ const ExamPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   
+  const [systemVerified, setSystemVerified] = useState(false);
   const [examStarted, setExamStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
@@ -204,11 +206,33 @@ const ExamPage: React.FC = () => {
     );
   }
 
+  // Show system verification first
+  if (!systemVerified) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <SystemVerification
+          examId={examId}
+          onVerificationComplete={(passed) => {
+            if (passed) {
+              setSystemVerified(true);
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
   if (!examStarted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Exam Instructions</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">Exam Instructions</h1>
+            <div className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="w-5 h-5" />
+              <span className="text-sm font-medium">System Verified</span>
+            </div>
+          </div>
           
           <div className="space-y-4 mb-8">
             <div className="flex items-start gap-3">

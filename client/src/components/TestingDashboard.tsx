@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FaceDetection from './FaceDetection';
+import SystemVerification from './SystemVerification';
 import { useCopyPasteDetection } from '../hooks/useCopyPasteDetection';
-import { Camera, Monitor, AlertTriangle, CheckCircle, Clipboard } from 'lucide-react';
+import { Camera, Monitor, AlertTriangle, CheckCircle, Clipboard, ArrowRight } from 'lucide-react';
 
 interface TestFlag {
   type: string;
@@ -12,6 +13,7 @@ interface TestFlag {
 
 const TestingDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [systemVerified, setSystemVerified] = useState(false);
   const [isTestingActive, setIsTestingActive] = useState(false);
   const [testFlags, setTestFlags] = useState<TestFlag[]>([]);
   const [cameraPermission, setCameraPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
@@ -57,14 +59,78 @@ const TestingDashboard: React.FC = () => {
     examId: 'test-exam-dashboard' // Test exam ID for testing dashboard
   });
 
+  // Phase 1: System Verification
+  if (!systemVerified) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-bold text-gray-900">Proctoring System Test</h1>
+                <div className="flex items-center gap-2 text-blue-600">
+                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-medium">1</div>
+                  <span className="text-sm font-medium">System Verification</span>
+                  <ArrowRight className="w-4 h-4 text-gray-400" />
+                  <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-600 text-xs flex items-center justify-center font-medium">2</div>
+                  <span className="text-sm text-gray-500">Proctoring Test</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate('/user/auth')}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Login as User
+                </button>
+                <button
+                  onClick={() => navigate('/admin/auth')}
+                  className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
+                  Login as Admin
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <SystemVerification
+          examId="test-exam-verification"
+          onVerificationComplete={(passed) => {
+            if (passed) {
+              setSystemVerified(true);
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Phase 2: Proctoring Testing
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Proctoring System Test</h1>
             <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-gray-900">Proctoring System Test</h1>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-green-600 text-white text-xs flex items-center justify-center font-medium">✓</div>
+                <span className="text-sm text-green-600 font-medium">System Verified</span>
+                <ArrowRight className="w-4 h-4 text-green-600" />
+                <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-medium">2</div>
+                <span className="text-sm font-medium text-blue-600">Proctoring Test</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSystemVerified(false)}
+                className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Re-run Verification
+              </button>
               <button
                 onClick={() => navigate('/user/auth')}
                 className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -84,12 +150,17 @@ const TestingDashboard: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Introduction */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-semibold text-blue-900 mb-2">Test Your Setup</h2>
-          <p className="text-blue-800">
-            Use this testing dashboard to verify that your camera and proctoring system are working correctly 
-            before taking an actual exam. This will help ensure a smooth exam experience.
-          </p>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-6 h-6 text-green-600 mt-0.5" />
+            <div>
+              <h2 className="text-lg font-semibold text-green-900 mb-2">System Verified - Ready for Testing</h2>
+              <p className="text-green-800">
+                Your system has passed all verification checks! Now you can test the proctoring features 
+                to see how they work during an actual exam. This will help you understand what to expect.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
