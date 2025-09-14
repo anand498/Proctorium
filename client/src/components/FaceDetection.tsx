@@ -14,6 +14,7 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<blazeface.BlazeFaceModel | null>(null);
   const [isModelLoading, setIsModelLoading] = useState(true);
+  const [modelError, setModelError] = useState<string | null>(null);
   const [faceDetected, setFaceDetected] = useState(false);
   const [lastFlagTime, setLastFlagTime] = useState(0);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -24,12 +25,26 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
   const loadModel = useCallback(async () => {
     try {
       setIsModelLoading(true);
+      setModelError(null);
+
+      console.log('Initializing TensorFlow.js...');
       await tf.ready();
+
+      console.log('Loading BlazeFace model...');
       const loadedModel = await blazeface.load();
       setModel(loadedModel);
       console.log('BlazeFace model loaded successfully');
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error loading BlazeFace model:', error);
+      setModelError(errorMessage);
+      setModel(null);
+
+      // Retry loading after 3 seconds
+      setTimeout(() => {
+        console.log('Retrying model load...');
+        loadModel();
+      }, 3000);
     } finally {
       setIsModelLoading(false);
     }
@@ -131,7 +146,9 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
         }
       }
 
-      // Draw face detection boxes (optional, for debugging)
+      // Optional: Draw face detection boxes for debugging (disabled to prevent blinking)
+      // Uncomment the block below if you need visual debugging
+      /*
       if (canvasRef.current) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -139,18 +156,19 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
+
           predictions.forEach((prediction) => {
             const start = prediction.topLeft as [number, number];
             const end = prediction.bottomRight as [number, number];
             const size = [end[0] - start[0], end[1] - start[1]];
-            
+
             ctx.strokeStyle = faceDetected ? '#00ff00' : '#ff0000';
             ctx.lineWidth = 2;
             ctx.strokeRect(start[0], start[1], size[0], size[1]);
           });
         }
       }
+      */
     } catch (error) {
       console.error('Error during face detection:', error);
     }
@@ -162,16 +180,18 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
   }, [loadModel]);
 
   useEffect(() => {
-    if (isActive && !isModelLoading) {
+    if (isActive && !isModelLoading && model) {
       startCamera();
-    } else {
+    } else if (!isActive) {
       stopCamera();
     }
 
     return () => {
-      stopCamera();
+      if (!isActive) {
+        stopCamera();
+      }
     };
-  }, [isActive, isModelLoading, startCamera, stopCamera]);
+  }, [isActive, isModelLoading, model, startCamera, stopCamera]);
 
   // Face detection loop
   useEffect(() => {
@@ -209,8 +229,8 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
         />
         <canvas
           ref={canvasRef}
-          className="absolute top-0 left-0 w-full h-full pointer-events-none"
-          style={{ display: 'none' }} // Hide canvas, only used for processing
+          className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-0"
+          style={{ zIndex: -1 }}
         />
         
         {/* Status indicators */}
@@ -222,7 +242,21 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
         {/* Loading indicator */}
         {isModelLoading && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="text-white text-sm">Loading AI model...</div>
+            <div className="text-white text-sm flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Loading AI model...
+            </div>
+          </div>
+        )}
+
+        {/* Error indicator */}
+        {modelError && !isModelLoading && (
+          <div className="absolute inset-0 bg-red-900 bg-opacity-75 flex items-center justify-center">
+            <div className="text-white text-xs text-center p-2">
+              <div>Model Error</div>
+              <div className="text-red-200">{modelError}</div>
+              <div className="mt-1">Retrying...</div>
+            </div>
           </div>
         )}
       </div>
@@ -231,7 +265,11 @@ const FaceDetection: React.FC<FaceDetectionProps> = ({ examId, onFlagDetected, i
       <div className="mt-2 text-xs text-gray-600">
         <div>Camera: {isActive ? 'Active' : 'Inactive'}</div>
         <div>Face: {faceDetected ? 'Detected' : 'Not detected'}</div>
-        <div>Model: {isModelLoading ? 'Loading...' : 'Ready'}</div>
+        <div>Model: {
+          isModelLoading ? 'Loading...' :
+          modelError ? 'Error (retrying)' :
+          model ? 'Ready' : 'Initializing'
+        }</div>
       </div>
     </div>
   );
