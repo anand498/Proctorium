@@ -23,7 +23,7 @@ FROM node:18-alpine
 RUN npm install -g serve
 
 # Copy built app
-COPY --from=build /app/build /app/build
+COPY --from=build /app/dist /app/build
 
 # Set working directory
 WORKDIR /app
