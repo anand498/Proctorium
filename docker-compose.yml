@@ -1,0 +1,77 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: exam_proctoring_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: exam_proctoring
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - exam_proctoring_network
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: exam_proctoring_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - exam_proctoring_network
+
+  # FastAPI Backend
+  backend:
+    build: ./backend
+    container_name: exam_proctoring_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/exam_proctoring?authSource=admin
+      MINIO_ENDPOINT: minio:9000
+      MINIO_EXTERNAL_ENDPOINT: localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      MINIO_BUCKET_NAME: exam-screenshots
+      JWT_SECRET_KEY: your_jwt_secret_key_here
+      CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000"
+    depends_on:
+      - mongodb
+      - minio
+    networks:
+      - exam_proctoring_network
+
+  # React Frontend
+  frontend:
+    build: ./frontend
+    container_name: exam_proctoring_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: ""
+    depends_on:
+      - backend
+    networks:
+      - exam_proctoring_network
+
+volumes:
+  mongodb_data:
+  minio_data:
+
+networks:
+  exam_proctoring_network:
+    driver: bridge
