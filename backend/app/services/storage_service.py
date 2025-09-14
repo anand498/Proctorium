@@ -27,6 +27,7 @@ class StorageService:
         )
         self.bucket_name = os.getenv("MINIO_BUCKET_NAME", "exam-screenshots")
         self._create_bucket_if_not_exists()
+        self._set_bucket_policy()
 
     def _create_bucket_if_not_exists(self) -> None:
         """Create MinIO bucket if it doesn't exist"""
@@ -37,6 +38,37 @@ class StorageService:
         except S3Error as e:
             self.logger.error(f"Error creating bucket: {e}")
             raise
+
+    def _set_bucket_policy(self) -> None:
+        """Set public read policy for the bucket"""
+        try:
+            print(f"🔧 Setting bucket policy for {self.bucket_name}")
+            # Set public read policy for the bucket
+            policy = {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": ["s3:GetObject"],
+                        "Resource": [f"arn:aws:s3:::{self.bucket_name}/*"],
+                    }
+                ],
+            }
+
+            import json
+
+            self.minio_client.set_bucket_policy(self.bucket_name, json.dumps(policy))
+            print(f"✅ Public read policy set for bucket '{self.bucket_name}'")
+            self.logger.info(f"Public read policy set for bucket '{self.bucket_name}'")
+        except S3Error as e:
+            print(f"❌ S3Error setting bucket policy: {e}")
+            self.logger.error(f"Error setting bucket policy: {e}")
+            # Don't raise here, just log the error
+        except Exception as e:
+            print(f"❌ Unexpected error setting bucket policy: {e}")
+            self.logger.error(f"Unexpected error setting bucket policy: {e}")
+            # Don't raise here, just log the error
 
     def upload_image(self, image_data: bytes, image_name: str) -> Optional[str]:
         """Upload image to MinIO and return the URL"""
@@ -58,10 +90,10 @@ class StorageService:
             )
 
             # Use external endpoint for URL generation (accessible from browser)
-            external_endpoint = os.getenv('MINIO_EXTERNAL_ENDPOINT', os.getenv('MINIO_ENDPOINT'))
-            url = (
-                f"http://{external_endpoint}/{self.bucket_name}/{image_name}"
+            external_endpoint = os.getenv(
+                "MINIO_EXTERNAL_ENDPOINT", os.getenv("MINIO_ENDPOINT")
             )
+            url = f"http://{external_endpoint}/{self.bucket_name}/{image_name}"
             self.logger.info(f"Image uploaded successfully: {image_name}")
             return url
         except S3Error as e:

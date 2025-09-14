@@ -1,5 +1,7 @@
 // This file contains helper functions used in various components.
 
+import { getToken } from '../services/auth';
+
 export const generateRandomExamId = () => {
     return Math.random().toString(36).substring(2, 10).toUpperCase();
 };
@@ -67,16 +69,25 @@ export const submitScreenshot = async (blob, examId, flagType) => {
         formData.append('flag_type', flagType);
         formData.append('timestamp', new Date().toISOString());
         
-        const token = localStorage.getItem('token');
+        const token = getToken();
         
         if (!token) {
             console.error('❌ No authentication token found');
             return null;
         }
         
-        // Construct URL properly - use relative URL when API_URL is empty
-        const apiBaseUrl = process.env.REACT_APP_API_URL || '';
-        const url = apiBaseUrl ? `${apiBaseUrl}/api/proctoring/screenshot` : '/api/proctoring/screenshot';
+        // Check if token looks like a valid JWT (3 parts separated by dots)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+            console.error('❌ Invalid token format (not a valid JWT)');
+            return null;
+        }
+        
+        console.log('🔑 Using token for screenshot submission:', token.substring(0, 20) + '...');
+        
+        // Direct backend API URL - no nginx proxy needed
+        const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const url = `${apiBaseUrl}/api/proctoring/screenshot`;
         
         console.log('📤 Submitting screenshot to:', url);
         

@@ -150,5 +150,48 @@ class ExamService:
         }
 
     def save_screenshot(self, exam_id: str, flag_name: str, image_data: bytes) -> str:
-        """Save screenshot and return URL"""
-        return self.storage_service.save_screenshot(exam_id, flag_name, image_data)
+        """Save screenshot to storage and create flag record in database"""
+        # Save screenshot to MinIO storage
+        screenshot_url = self.storage_service.save_screenshot(exam_id, flag_name, image_data)
+        
+        # Create flag record in database
+        flag_data = {
+            "flag_name": flag_name,
+            "screenshot_url": screenshot_url,
+            "timestamp": datetime.utcnow()
+        }
+        
+        # Update existing exam or create new one
+        exam_data = self.exams_collection.find_one({"exam_id": exam_id})
+        
+        if exam_data:
+            # Add flag to existing exam
+            existing_flags = exam_data.get("flags", [])
+            existing_flags.append(flag_data)
+            
+            # Also add to screenshots array
+            existing_screenshots = exam_data.get("screenshots", [])
+            existing_screenshots.append(screenshot_url)
+            
+            self.exams_collection.update_one(
+                {"exam_id": exam_id}, 
+                {"$set": {
+                    "flags": existing_flags,
+                    "screenshots": existing_screenshots
+                }}
+            )
+            print(f"� Added flag to existing exam {exam_id}")
+        else:
+            # Create new exam record with this flag
+            new_exam = {
+                "exam_id": exam_id,
+                "flags": [flag_data],
+                "screenshots": [screenshot_url],
+                "status": "in_progress",
+                "created_at": datetime.utcnow()
+            }
+            
+            self.exams_collection.insert_one(new_exam)
+            print(f"📝 Created new exam record for {exam_id}")
+        
+        return screenshot_url
