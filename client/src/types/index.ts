@@ -17,11 +17,11 @@ export interface AuthResponse {
 
 export interface Flag {
   id?: string;
-  exam_id: string;
-  flag_type: string;
+  exam_id?: string;
+  flag_name: string;
   timestamp: string;
   screenshot_url: string;
-  description: string;
+  description?: string;
 }
 
 export interface ExamSession {

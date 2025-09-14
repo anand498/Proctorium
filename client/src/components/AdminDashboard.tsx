@@ -38,8 +38,9 @@ const AdminDashboard: React.FC = () => {
   const handleViewExam = async (exam: ExamData) => {
     try {
       setSelectedExam(exam);
-      const flags = await adminAPI.getExamFlags(exam.exam_id);
-      setExamFlags(flags);
+      const response = await adminAPI.getExamFlags(exam.exam_id);
+      const flags = response.flags || [];
+      setExamFlags(Array.isArray(flags) ? flags : []);
     } catch (err) {
       console.error('Error fetching exam flags:', err);
       setExamFlags([]);
@@ -174,23 +175,7 @@ const AdminDashboard: React.FC = () => {
             <div className="p-6">
               {selectedExam ? (
                 <div className="space-y-6">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-2">Exam Information</h3>
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Exam ID:</span>
-                        <span className="text-sm font-medium">{selectedExam.exam_id}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">User ID:</span>
-                        <span className="text-sm font-medium">{selectedExam.user_id}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Completion Time:</span>
-                        <span className="text-sm font-medium">{selectedExam.completion_time}</span>
-                      </div>
-                    </div>
-                  </div>
+  
 
                   <div>
                     <h3 className="text-sm font-medium text-gray-900 mb-2">Proctoring Flags</h3>
@@ -198,28 +183,31 @@ const AdminDashboard: React.FC = () => {
                       <p className="text-gray-500 text-sm">No flags recorded for this exam</p>
                     ) : (
                       <div className="space-y-3">
-                        {examFlags.map((flag, index) => (
+                        {Array.isArray(examFlags) && examFlags.map((flag, index) => (
                           <div key={index} className="border border-gray-200 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-sm font-medium text-gray-900">
-                                {flag.flag_type}
+                                {flag.flag_name}
                               </span>
                               <span className="text-xs text-gray-500">
                                 {new Date(flag.timestamp).toLocaleString()}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">{flag.description}</p>
+                            {flag.description && (
+                              <p className="text-sm text-gray-600 mb-2">{flag.description}</p>
+                            )}
                             {flag.screenshot_url && (
-                              <div className="flex items-center gap-2">
-                                <Camera className="w-4 h-4 text-gray-400" />
-                                <a
-                                  href={flag.screenshot_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-blue-600 hover:text-blue-800"
-                                >
-                                  View Screenshot
-                                </a>
+                              <div className="mt-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Camera className="w-4 h-4 text-gray-400" />
+                                  <span className="text-sm text-gray-600">Screenshot:</span>
+                                </div>
+                                <img
+                                  src={flag.screenshot_url}
+                                  alt={`Screenshot for ${flag.flag_name}`}
+                                  className="max-w-xs max-h-48 h-auto rounded-lg border border-gray-200 cursor-pointer hover:border-gray-300 transition-colors object-cover"
+                                  onClick={() => window.open(flag.screenshot_url, '_blank')}
+                                />
                               </div>
                             )}
                           </div>

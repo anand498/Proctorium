@@ -54,13 +54,26 @@ services:
     networks:
       - exam_proctoring_network
 
-  # React Frontend
-  frontend:
-    build: ./frontend
-    container_name: exam_proctoring_frontend
+  # # React Frontend
+  # frontend:
+  #   build: ./frontend
+  #   container_name: exam_proctoring_frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     REACT_APP_API_URL: "http://localhost:8000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - exam_proctoring_network
+
+  client:
+    build: ./client
+    container_name: exam_proctoring_frontend_client
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       REACT_APP_API_URL: "http://localhost:8000"
     depends_on:

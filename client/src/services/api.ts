@@ -53,7 +53,7 @@ export const adminAPI = {
     await api.delete(`/api/admin/exams/${examId}`);
   },
 
-  getExamFlags: async (examId: string): Promise<Flag[]> => {
+  getExamFlags: async (examId: string): Promise<{ exam_id: string; flags: Flag[]; screenshots: string[] }> => {
     const response = await api.get(`/api/admin/flags/${examId}`);
     return response.data;
   },
