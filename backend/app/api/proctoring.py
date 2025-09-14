@@ -74,31 +74,44 @@ async def get_proctoring_data(exam_id: str, user: str = Depends(get_current_user
 
 @router.post("/screenshot")
 async def upload_screenshot(
-    file: UploadFile = File(...),
     exam_id: str = Form(...),
     flag_type: str = Form(...),
     timestamp: str = Form(...),
+    file: UploadFile = File(None),
+    description: str = Form(""),
     # user: str = Depends(get_current_user),
 ):
-    """Upload a screenshot for proctoring"""
+    """Upload a screenshot for proctoring or submit flag without screenshot"""
     try:
-        print(f"📸 Received screenshot upload for exam {exam_id}, flag: {flag_type}")
+        print(f"📸 Received flag submission for exam {exam_id}, flag: {flag_type}")
 
-        # Read file content
-        image_data = await file.read()
-        print(f"📷 Screenshot size: {len(image_data)} bytes")
-
-        # Save screenshot using exam service (saves to both storage and database)
-        screenshot_url = exam_service.save_screenshot(exam_id, flag_type, image_data)
-        print(f"✅ Screenshot saved to storage and database: {screenshot_url}")
-
-        return {
-            "message": "Screenshot uploaded successfully",
-            "screenshot_url": screenshot_url,
-            "exam_id": exam_id,
-            "flag_type": flag_type,
-            "timestamp": timestamp,
-        }
+        if file and file.size > 0:
+            # Handle screenshot upload
+            image_data = await file.read()
+            print(f"📷 Screenshot size: {len(image_data)} bytes")
+            screenshot_url = exam_service.save_screenshot(exam_id, flag_type, image_data)
+            print(f"✅ Screenshot saved to storage and database: {screenshot_url}")
+            
+            return {
+                "message": "Screenshot uploaded successfully",
+                "screenshot_url": screenshot_url,
+                "exam_id": exam_id,
+                "flag_type": flag_type,
+                "timestamp": timestamp,
+            }
+        else:
+            # Handle flag without screenshot (copy-paste, tab-switch, etc.)
+            print(f"🚩 Flag without screenshot: {flag_type}")
+            flag_url = exam_service.save_flag_without_screenshot(exam_id, flag_type, description, timestamp)
+            print(f"✅ Flag saved to database: {flag_type}")
+            
+            return {
+                "message": "Flag submitted successfully",
+                "flag_type": flag_type,
+                "exam_id": exam_id,
+                "timestamp": timestamp,
+                "description": description,
+            }
     except Exception as e:
-        print(f"❌ Error uploading screenshot: {str(e)}")
+        print(f"❌ Error processing request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -87,11 +87,17 @@ export const proctoringAPI = {
   },
 
   submitFlag: async (examId: string, flagType: string, description: string, timestamp: string) => {
-    const response = await api.post('/api/proctoring/flag', {
-      exam_id: examId,
-      flag_type: flagType,
-      description: description,
-      timestamp: timestamp
+    const formData = new FormData();
+    formData.append('exam_id', examId);
+    formData.append('flag_type', flagType);
+    formData.append('description', description);
+    formData.append('timestamp', timestamp);
+    // No file attached for copy-paste/tab-switch flags
+
+    const response = await api.post('/api/proctoring/screenshot', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return response.data;
   },
