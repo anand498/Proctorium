@@ -333,8 +333,8 @@ const FaceDetection = ({ examId, onFlagsDetected, onComplete }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Video feed */}
                     <div className="lg:col-span-2">
-                        <div className="card dark-video-card">
-                            <div className="card-header">
+                        <div className="card" style={{ background: 'transparent', boxShadow: 'none' }}>
+                            <div className="card-header" style={{ background: 'rgba(0, 0, 0, 0.2)' }}>
                                 <div className="flex items-center gap-3">
                                     <div className="camera-icon">
                                         <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,20 +348,41 @@ const FaceDetection = ({ examId, onFlagsDetected, onComplete }) => {
                                 </div>
                             </div>
 
-                            <div className="card-body">
-                                <div className="video-container dark-video">
+                            <div className="card-body" style={{ background: 'transparent', padding: '0' }}>
+                                <div className="video-container" style={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    maxWidth: '640px',
+                                    margin: '0 auto',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    backgroundColor: 'transparent'
+                                }}>
                                     <video
                                         ref={videoRef}
                                         autoPlay
                                         playsInline
                                         muted
-                                        className="video-feed"
+                                        style={{
+                                            width: '100%',
+                                            height: 'auto',
+                                            display: 'block',
+                                            backgroundColor: 'transparent',
+                                            filter: 'none'
+                                        }}
                                     />
                                     <canvas
                                         ref={canvasRef}
-                                        className="video-overlay"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            pointerEvents: 'none',
+                                            backgroundColor: 'transparent'
+                                        }}
                                     />
-                                    <div className="video-frame"></div>
                                 </div>
                             </div>
                         </div>
@@ -453,27 +474,11 @@ const FaceDetection = ({ examId, onFlagsDetected, onComplete }) => {
                     text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
                 }
 
-                .dark-video-card {
-                    background: rgba(30, 41, 59, 0.8);
-                    border: 1px solid rgba(59, 130, 246, 0.2);
-                    box-shadow:
-                        0 20px 25px -5px rgba(0, 0, 0, 0.4),
-                        0 0 20px rgba(59, 130, 246, 0.1);
-                }
-
-                .camera-icon {
+.camera-icon {
                     animation: pulse 2s ease-in-out infinite;
                 }
 
-                .dark-video {
-                    background: linear-gradient(135deg, #0f172a, #1e293b);
-                    border: 2px solid rgba(59, 130, 246, 0.3);
-                    box-shadow:
-                        inset 0 0 50px rgba(0, 0, 0, 0.5),
-                        0 0 30px rgba(59, 130, 246, 0.2);
-                }
-
-                .video-frame {
+                .video-frame {                .video-frame {
                     position: absolute;
                     top: -2px;
                     left: -2px;
