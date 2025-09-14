@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FaceDetection from './FaceDetection';
-import { Camera, Monitor, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { useCopyPasteDetection } from '../hooks/useCopyPasteDetection';
+import { Camera, Monitor, AlertTriangle, CheckCircle, Clipboard } from 'lucide-react';
 
 interface TestFlag {
   type: string;
@@ -41,9 +42,20 @@ const TestingDashboard: React.FC = () => {
     setTestFlags(prev => [...prev, newFlag]);
   };
 
+  const handleCopyPasteDetected = (type: 'copy' | 'paste', details: string) => {
+    handleFlagDetected(`clipboard_${type}`, details);
+  };
+
   const clearFlags = () => {
     setTestFlags([]);
   };
+
+  // Initialize copy-paste detection
+  useCopyPasteDetection({
+    onCopyDetected: handleCopyPasteDetected,
+    isActive: isTestingActive,
+    examId: 'test-exam-dashboard' // Test exam ID for testing dashboard
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -51,15 +63,20 @@ const TestingDashboard: React.FC = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
+            <h1 className="text-2xl font-bold text-gray-900">Proctoring System Test</h1>
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/user/dashboard')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                onClick={() => navigate('/user/auth')}
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Dashboard
+                Login as User
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">Proctoring System Test</h1>
+              <button
+                onClick={() => navigate('/admin/auth')}
+                className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Login as Admin
+              </button>
             </div>
           </div>
         </div>
@@ -250,6 +267,9 @@ const TestingDashboard: React.FC = () => {
                 <li>• Cover your camera briefly</li>
                 <li>• Have someone else appear in the camera view</li>
                 <li>• Switch to another browser tab</li>
+                <li>• Copy text from this page (Ctrl+C or Cmd+C)</li>
+                <li>• Paste text anywhere on this page (Ctrl+V or Cmd+V)</li>
+                <li>• Try right-click copy/paste operations</li>
               </ul>
             </div>
             <div>
@@ -258,11 +278,32 @@ const TestingDashboard: React.FC = () => {
                 <li>• System should detect when no face is visible</li>
                 <li>• Multiple faces should trigger an alert</li>
                 <li>• Tab switching should be flagged</li>
+                <li>• Copy operations should be detected and flagged</li>
+                <li>• Paste operations should be detected and flagged</li>
                 <li>• All flags should appear in the test results</li>
                 <li>• Camera feed should show your face clearly</li>
               </ul>
             </div>
           </div>
+          
+          {/* Copy-Paste Test Area */}
+          {isTestingActive && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                <Clipboard className="w-4 h-4" />
+                Copy-Paste Test Area
+              </h4>
+              <p className="text-sm text-gray-600 mb-3">
+                Use this area to test copy-paste detection. Try selecting and copying this text, 
+                or paste something here to trigger the detection system.
+              </p>
+              <textarea
+                className="w-full h-20 p-2 border border-gray-300 rounded text-sm resize-none"
+                placeholder="Try pasting text here to test paste detection..."
+                defaultValue="Select and copy this text to test copy detection!"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

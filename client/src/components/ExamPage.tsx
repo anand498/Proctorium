@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import FaceDetection from './FaceDetection';
 import { proctoringAPI } from '../services/api';
-import { Clock, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { useTabSwitchDetection } from '../hooks/useTabSwitchDetection';
+import { useCopyPasteDetection } from '../hooks/useCopyPasteDetection';
+import { Clock, AlertTriangle, CheckCircle, XCircle, Monitor, Clipboard } from 'lucide-react';
 
 interface Question {
   id: number;
@@ -76,6 +78,15 @@ const ExamPage: React.FC = () => {
     }
   }, [isAuthenticated, examId, navigate]);
 
+  const handleFlagDetected = (flagType: string, description: string) => {
+    const newFlag: Flag = {
+      type: flagType,
+      description,
+      timestamp: new Date().toISOString()
+    };
+    setFlags(prev => [...prev, newFlag]);
+  };
+
   // Timer effect
   useEffect(() => {
     if (!examStarted || examSubmitted) return;
@@ -93,6 +104,24 @@ const ExamPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [examStarted, examSubmitted]);
 
+  // Tab switch detection
+  const { tabSwitchCount } = useTabSwitchDetection({
+    onTabSwitch: handleFlagDetected,
+    isActive: examStarted && !examSubmitted,
+    examId: examId
+  });
+
+  // Copy-paste detection
+  const handleCopyPasteDetected = (type: 'copy' | 'paste', details: string) => {
+    handleFlagDetected(`clipboard_${type}`, details);
+  };
+
+  useCopyPasteDetection({
+    onCopyDetected: handleCopyPasteDetected,
+    isActive: examStarted && !examSubmitted,
+    examId: examId
+  });
+
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -102,15 +131,6 @@ const ExamPage: React.FC = () => {
 
   const handleStartExam = () => {
     setExamStarted(true);
-  };
-
-  const handleFlagDetected = (flagType: string, description: string) => {
-    const newFlag: Flag = {
-      type: flagType,
-      description,
-      timestamp: new Date().toISOString()
-    };
-    setFlags(prev => [...prev, newFlag]);
   };
 
   const handleAnswerChange = (questionId: number, answer: string) => {
@@ -208,10 +228,26 @@ const ExamPage: React.FC = () => {
             </div>
             
             <div className="flex items-start gap-3">
+              <Monitor className="w-5 h-5 text-red-500 mt-0.5" />
+              <div>
+                <h3 className="font-medium text-gray-900">Tab Switch Detection</h3>
+                <p className="text-sm text-gray-600">Switching tabs, changing windows, or using keyboard shortcuts will be automatically detected and flagged.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <Clipboard className="w-5 h-5 text-red-500 mt-0.5" />
+              <div>
+                <h3 className="font-medium text-gray-900">Copy-Paste Detection</h3>
+                <p className="text-sm text-gray-600">All copy and paste operations will be automatically detected and flagged during the exam.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
               <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
               <div>
-                <h3 className="font-medium text-gray-900">Prohibited Actions</h3>
-                <p className="text-sm text-gray-600">Switching tabs, multiple faces in camera, or looking away will be flagged.</p>
+                <h3 className="font-medium text-gray-900">Other Prohibited Actions</h3>
+                <p className="text-sm text-gray-600">Multiple faces in camera, looking away, or suspicious behavior will be flagged.</p>
               </div>
             </div>
           </div>
@@ -251,6 +287,13 @@ const ExamPage: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-4">
+              {tabSwitchCount > 0 && (
+                <div className="flex items-center gap-2 text-red-600">
+                  <Monitor className="w-4 h-4" />
+                  <span className="text-sm">{tabSwitchCount} tab switches</span>
+                </div>
+              )}
+              
               {flags.length > 0 && (
                 <div className="flex items-center gap-2 text-orange-600">
                   <AlertTriangle className="w-4 h-4" />
